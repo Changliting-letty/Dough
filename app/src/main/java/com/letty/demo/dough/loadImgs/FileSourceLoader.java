@@ -17,38 +17,39 @@ import android.widget.ImageView;
 
 import com.letty.demo.dough.Dough;
 import com.letty.demo.dough.bitmaputil.BitmapTransform;
+import com.letty.demo.dough.log.LogUtil;
 
 import java.io.File;
 
 public class FileSourceLoader extends AbstractLoader {
     private static final String mTag = "FileSourceLoader";
 
+    /**
+     * 未考虑大图内存溢出的问题
+     *
+     * @param request 不同加载器加载
+     * @return
+     */
     @Override
-    public void onLoad(EachRequest request) {
-        //控件宽高
-        ImageView imageView = request.getImageView();
-        int imageviewWidth = ImageViewUtil.getImageViewWidth(imageView);
-        int imageviewHeight = ImageViewUtil.getImageViewHeight(imageView);
+    public Bitmap onLoad(EachRequest request) {
+        Bitmap bitmap = null;
         //文件路径
         BitmapFactory.Options options = new BitmapFactory.Options();
         options.inJustDecodeBounds = true;//只对宽高，不全部读图到内存
         options.inPreferredConfig = Dough.getIncetance().getConfig().getBitmapConfig();
         final String filePath = Uri.parse(request.getUrl()).getPath();
         File file = new File(filePath);
-        if (!file.exists() || !file.isFile()) return;
-        Bitmap bitmap = BitmapFactory.decodeFile(filePath, options); //options中含有图片大小
+        if (!file.exists() || !file.isFile()) {
+            LogUtil.d(mTag, "The loading file doesn't exist.");
+            return null;
+        }
+        bitmap = BitmapFactory.decodeFile(filePath, options); //options中含有图片大小
         //获取采样比
+        int imageviewWidth = request.getImgViewWidth();
+        int imageviewHeight = request.getImgViewHeight();
         BitmapTransform.getSampleSizeWithOptions(options, imageviewWidth, imageviewHeight);
         options.inJustDecodeBounds = false;//复位
         bitmap = BitmapFactory.decodeFile(filePath, options);
-        if (bitmap == null) {
-            Log.d(mTag, "Load Error");
-            showErrorImd(request);
-        } else {
-            putToMemoryCache(request, bitmap);
-            putToDiskCache(request, bitmap);
-            showInUI(request, bitmap);
-        }
-
+        return bitmap;
     }
 }

@@ -2,8 +2,8 @@
  * @TIME：2022/3/31 19:21
  * @Author:clt
  * @desc: this is MyApplication
- *
- *   获取Appliation的Context
+ * <p>
+ * 获取Appliation的Context
  */
 
 package com.letty.demo.dough;
@@ -19,9 +19,16 @@ public class MyApplication extends Application {
     public void onCreate() {
         super.onCreate();
         context = getApplicationContext();
+        /*全局配置*/
+        DoughConfig config = new DoughConfig.Builder(MyApplication.getContext())
+                .setMemoryCacheEnable(true)
+                .setDiskCacheEnable(true)
+                .build();
+        /*加载框架实例,创建以及初始化*/
+        Dough.init(config);
     }
 
-    public  static Context getContext(){
-        return  context;
+    public static Context getContext() {
+        return context;
     }
 }

@@ -11,30 +11,16 @@ import android.graphics.Bitmap;
 import android.util.LruCache;
 
 import com.letty.demo.dough.loadImgs.EachRequest;
+import com.letty.demo.dough.loadImgs.MD5Util;
 
-public class MemoryLruCache extends AbstractCache {
+public class MemoryLruCache {
     private LruCache<String, Bitmap> lruCache;
-    private int maxSize = (int) (Runtime.getRuntime().maxMemory() / 1024 / 8);
 
-    /**
-     * 用户选择使用内存缓存大小默认值
-     */
-    public MemoryLruCache() {
-        //整个应用内存的的1/8
-        lruCache = new LruCache<String, Bitmap>(maxSize) {
-            //重写为了单位一致，返回图片占用的字节数
-            @Override
-            protected int sizeOf(String key, Bitmap value) {
-                return value.getByteCount() / 1024;
-            }
-        };
-    }
 
     /**
      * @param maxSize 用户自定义的内存缓存大小
      */
     public MemoryLruCache(Integer maxSize) {
-        this.maxSize = maxSize;
         lruCache = new LruCache<String, Bitmap>(maxSize) {
             @Override
             protected int sizeOf(String key, Bitmap value) {
@@ -46,17 +32,17 @@ public class MemoryLruCache extends AbstractCache {
     /**
      * 读缓存
      */
-    @Override
     public Bitmap get(EachRequest request) {
-        String key = request.getUrlMD5();
+        String key = MD5Util.MD5(request.getUrl());
         if (key == null || key.equals("")) return null;
         return lruCache.get(key);
     }
 
     //写缓存
-    @Override
+
     public void put(EachRequest request, Bitmap bitmap) {
-        String key = request.getUrlMD5();
+        /*以url的MD5为键*/
+        String key = MD5Util.MD5(request.getUrl());
         if (key == null || key.equals("")) return;
         lruCache.put(key, bitmap);
     }
@@ -67,9 +53,9 @@ public class MemoryLruCache extends AbstractCache {
      * @param request 封装的请求对象
      */
 
-    @Override
+
     public void remove(EachRequest request) {
-        String key = request.getUrlMD5();
+        String key = MD5Util.MD5(request.getUrl());
         if (key == null || key.equals("")) return;
         lruCache.remove(key);
     }
@@ -78,7 +64,7 @@ public class MemoryLruCache extends AbstractCache {
      * 清空缓存
      */
 
-    @Override
+
     public void clear() {
         lruCache.evictAll();
     }

@@ -10,19 +10,43 @@ package com.letty.demo.dough.placeholder;
 
 import androidx.annotation.DrawableRes;
 
-import com.letty.demo.dough.Policy;
+import com.letty.demo.dough.R;
 
-public class PlaceHolderPolicy extends AbstractPlaceHolderPolicy {
+public class PlaceHolderPolicy {
 
     private int loadingImg;
     private int errorImg;
+
+    /**
+     * 使用默认占位图
+     */
+    public PlaceHolderPolicy() {
+        this.loadingImg = R.drawable.load;
+        this.errorImg = R.drawable.error;
+    }
+
+    /**
+     * 自定义占位符
+     */
+    public PlaceHolderPolicy(@DrawableRes Integer loadingImg, @DrawableRes Integer errorImg) {
+        if (loadingImg != null) {
+            this.loadingImg = loadingImg;
+        } else {
+            this.loadingImg = R.drawable.load;
+        }
+        if (errorImg != null) {
+            this.errorImg = errorImg;
+        } else {
+            this.errorImg = R.drawable.error;
+        }
+    }
 
     /**
      * 获取加载中占位图
      *
      * @return
      */
-    @Override
+
     public int getLoadingImg() {
         return loadingImg;
     }
@@ -32,31 +56,10 @@ public class PlaceHolderPolicy extends AbstractPlaceHolderPolicy {
      *
      * @return
      */
-    @Override
-    public int getErrorImd() {
+
+    public int getErrorImg() {
         return errorImg;
     }
 
-    public static class Builder {
-        PlaceHolderPolicy placeHolderPolicy;
 
-        public Builder() {
-            placeHolderPolicy = new PlaceHolderPolicy();
-        }
-
-        public Builder setLocadingImg(@DrawableRes int locadingImg) {
-            placeHolderPolicy.loadingImg = locadingImg;
-            return this;
-        }
-
-        public Builder setErrorImg(@DrawableRes int errorImg) {
-            placeHolderPolicy.errorImg = errorImg;
-            return this;
-        }
-
-        public PlaceHolderPolicy build() {
-            return placeHolderPolicy;
-
-        }
-    }
 }

@@ -7,17 +7,8 @@ package com.letty.demo.dough;
 import android.content.Context;
 import android.graphics.Bitmap;
 
-import androidx.annotation.DrawableRes;
-
-import com.letty.demo.dough.cache.AbstractCache;
 import com.letty.demo.dough.cache.MemoryLruCache;
 import com.letty.demo.dough.cache.MyDiskLruCache;
-import com.letty.demo.dough.loadImgs.ILoaderPolicy;
-import com.letty.demo.dough.loadImgs.LoadPolicyFIFO;
-import com.letty.demo.dough.loadImgs.LoadPolicyLIFO;
-import com.letty.demo.dough.log.LogUtil;
-import com.letty.demo.dough.placeholder.AbstractPlaceHolderPolicy;
-import com.letty.demo.dough.placeholder.PlaceHolderPolicy;
 
 public class DoughConfig {
     private static final String mTag = "DouConfig";
@@ -34,22 +25,22 @@ public class DoughConfig {
     /**
      * 内存缓存
      */
-    private AbstractCache memoryCache;
+    private MemoryLruCache memoryCache;
 
+    /**
+     * 内存缓存大小,默认值
+     */
+    private int memoryCacheMaxSize = (int) (Runtime.getRuntime().maxMemory()) / 1024 / 8;
     /**
      * 硬盘缓存
      */
-    private AbstractCache disCache;
+    private MyDiskLruCache disCache;
 
     /**
-     * 图片加载策略
+     * 硬盘缓存大小,默认值
      */
-    private ILoaderPolicy loaderPolicy;
+    private long diskCacheMaxSize = 1024 * 1024 * 30;
 
-    /**
-     * 占位图设置
-     */
-    private AbstractPlaceHolderPolicy placeHolderPolicy;
 
     /**
      * 默认配置
@@ -70,96 +61,43 @@ public class DoughConfig {
         }
 
         /**
-         * @param value 用户内存缓存策略,1支持内存缓存策略，0为不支持内存缓存
+         * @param isCache 用户内存缓存策略,true支持内存缓存策略，false为不支持内存缓存
          * @return
          */
-        public Builder setMemoryCache(int value) {
+        public Builder setMemoryCacheEnable(Boolean isCache) {
             /*用户选择支持内存缓存*/
-            if (value == Policy.MemoryCachePolicy.LRU.getValue()) {
-                doughConfig.memoryCache = new MemoryLruCache();
+            if (isCache) {
+                doughConfig.memoryCache = new MemoryLruCache(doughConfig.memoryCacheMaxSize);
             }
             return this;
         }
 
         /**
-         * @param value   用户内存缓存策略,1支持内存缓存策略，0为不支持内存缓存
-         * @param MaxSize 自定义内存缓存大小
+         * @param MaxSize 自定义内存缓存大小,默认支持内存缓存
          * @return
          */
-        public Builder setMemoryCache(int value, int MaxSize) {
-            /*用户选择支持内存缓存*/
-            if (value == Policy.MemoryCachePolicy.LRU.getValue()) {
-                doughConfig.memoryCache = new MemoryLruCache(MaxSize);
-            }
+        public Builder setMemoryCacheMaxSize(int MaxSize) {
+            doughConfig.memoryCache = new MemoryLruCache(MaxSize);
             return this;
         }
 
         /**
-         * @param value 硬盘缓存策略,1支持硬盘缓存，0为不支持硬盘缓存
+         * @param isCache 硬盘缓存策略,true持硬盘缓存，false为不支持硬盘缓存
          * @return
          */
-        public Builder setDiskCache(int value) {
-            if (value == Policy.DiskCachePolicy.Result.getValue()) {
-                if (doughConfig.memoryCache != null) {
-                    doughConfig.disCache = new MyDiskLruCache(doughConfig.getContext());
-                } else {
-                    LogUtil.d(mTag, "Please support memory cache first");
-                }
+        public Builder setDiskCacheEnable(Boolean isCache) {
+            if (isCache) {
+                doughConfig.disCache = new MyDiskLruCache(doughConfig.getContext(), doughConfig.diskCacheMaxSize);
             }
             return this;
         }
 
         /**
-         * @param value
          * @param maxSize 自定义硬盘缓存大小
          * @return
          */
-        public Builder setDiskCache(int value, int maxSize) {
-            if (value == Policy.DiskCachePolicy.Result.getValue()) {
-                if (doughConfig.memoryCache != null) {
-                    doughConfig.disCache = new MyDiskLruCache(doughConfig.context, maxSize);
-                } else {
-                    LogUtil.d(mTag, "Please support memory cache first");
-                }
-            }
-            return this;
-        }
-
-        /**
-         * @param value 加载顺序  0为下FIFO  1为LIFO
-         * @return
-         */
-        public Builder setLoaderPolicy(int value) {
-            if (value == Policy.LoadPolicy.FIFO.getValue()) {
-                doughConfig.loaderPolicy = new LoadPolicyFIFO();
-            }
-            if (value == Policy.LoadPolicy.LIFO.getValue()) {
-                doughConfig.loaderPolicy = new LoadPolicyLIFO();
-            }
-            return this;
-        }
-
-        /**
-         * 设置占位图  使用默认占位图
-         *
-         * @return
-         */
-        public Builder setPlaceholder() {
-            doughConfig.placeHolderPolicy = new PlaceHolderPolicy.Builder()
-                    .setLocadingImg(Policy.PlaceHolderPolicy.LOADINGIMG.getRes())
-                    .setErrorImg(Policy.PlaceHolderPolicy.ErrorIMG.getRes())
-                    .build();
-            return this;
-        }
-
-        /**
-         * 使用自定义占位图
-         */
-        public Builder setPlaceholder(@DrawableRes int loadingImg, @DrawableRes int errorImg) {
-            doughConfig.placeHolderPolicy = new PlaceHolderPolicy.Builder()
-                    .setLocadingImg(loadingImg)
-                    .setErrorImg(errorImg)
-                    .build();
+        public Builder setDiskCacheMaxSize(long maxSize) {
+            doughConfig.disCache = new MyDiskLruCache(doughConfig.context, maxSize);
             return this;
         }
 
@@ -181,20 +119,12 @@ public class DoughConfig {
         return context;
     }
 
-    public AbstractCache getMemoryCache() {
+    public MemoryLruCache getMemoryCache() {
         return memoryCache;
     }
 
-    public AbstractCache getDisCache() {
+    public MyDiskLruCache getDisCache() {
         return disCache;
-    }
-
-    public ILoaderPolicy getLoaderPolicy() {
-        return loaderPolicy;
-    }
-
-    public AbstractPlaceHolderPolicy getPlaceHolderPolicy() {
-        return placeHolderPolicy;
     }
 
     public Bitmap.Config getBitmapConfig() {

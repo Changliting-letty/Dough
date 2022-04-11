@@ -9,34 +9,28 @@ package com.letty.demo.dough.cache;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.os.Environment;
 
 import com.jakewharton.disklrucache.DiskLruCache;
-import com.letty.demo.dough.Policy;
 import com.letty.demo.dough.loadImgs.EachRequest;
-import com.letty.demo.dough.log.LogUtil;
+import com.letty.demo.dough.loadImgs.MD5Util;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 
-public class MyDiskLruCache extends AbstractCache {
+public class MyDiskLruCache {
     /**
      * 默认缓存路径
      */
-    private String disImgsCache = "Image";
+    private String diskImgsCache = "Image";
     private int appversion = 1;
     private int valueCount = 1;
-    private long maxSize = 1024 * 1024 * 30;
+
     /**
      * 缓存目录
      */
     private File directory;
     private DiskLruCache diskLruCache;
-
-    public MyDiskLruCache(Context context) {
-        initDiskCache(context);
-    }
 
     /**
      * 构造
@@ -45,27 +39,7 @@ public class MyDiskLruCache extends AbstractCache {
      * @param maxSize
      */
     public MyDiskLruCache(Context context, long maxSize) {
-        this.maxSize = maxSize;
-        initDiskCache(context);
-    }
-
-    /**
-     * 设置缓存大小
-     *
-     * @param maxSize
-     */
-    public void setMaxSize(long maxSize) {
-        this.maxSize = maxSize;
-    }
-
-    /**
-     * 初始化
-     *
-     * @param context
-     */
-    private void initDiskCache(Context context) {
-
-        File directory = new File(context.getCacheDir(), disImgsCache);
+        File directory = new File(context.getCacheDir(), diskImgsCache);
         if (!directory.exists()) {
             directory.mkdir();
         }
@@ -77,15 +51,16 @@ public class MyDiskLruCache extends AbstractCache {
         }
     }
 
+
     /**
      * 读缓存
      *
      * @param request 封装的请求对象
      * @return
      */
-    @Override
+
     public Bitmap get(EachRequest request) {
-        String key = request.getUrlMD5();
+        String key = MD5Util.MD5(request.getUrl());
         if (diskLruCache == null) return null;
         Bitmap bitmap = null;
         DiskLruCache.Snapshot snapshot = null;
@@ -95,6 +70,7 @@ public class MyDiskLruCache extends AbstractCache {
             //已经是结果图，不用在压缩图片
             InputStream inputStream = (InputStream) snapshot.getInputStream(0);
             bitmap = BitmapFactory.decodeStream(inputStream);
+            inputStream.close();
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -107,9 +83,9 @@ public class MyDiskLruCache extends AbstractCache {
      * @param request 封装的请求对象
      * @param bitmap  缓存的图
      */
-    @Override
+
     public void put(EachRequest request, Bitmap bitmap) {
-        String key = request.getUrlMD5();
+        String key = MD5Util.MD5(request.getUrl());
         if (diskLruCache == null) return;
         try {
             DiskLruCache.Editor editor = diskLruCache.edit(key);
@@ -126,9 +102,9 @@ public class MyDiskLruCache extends AbstractCache {
      *
      * @param request 封装的请求对象
      */
-    @Override
+
     public void remove(EachRequest request) {
-        String key = request.getUrlMD5();
+        String key = MD5Util.MD5(request.getUrl());
         if (diskLruCache == null) return;
         try {
             diskLruCache.remove(key);
@@ -141,7 +117,6 @@ public class MyDiskLruCache extends AbstractCache {
      * 清除缓存
      */
 
-    @Override
     public void clear() {
         if (diskLruCache == null) return;
         try {

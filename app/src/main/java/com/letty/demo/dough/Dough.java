@@ -10,11 +10,12 @@ package com.letty.demo.dough;
 
 import android.widget.ImageView;
 
+import androidx.annotation.DrawableRes;
 import androidx.annotation.NonNull;
 
-import com.letty.demo.dough.loadImgs.AsynTaskLoad;
+import com.letty.demo.dough.loadImgs.AsynLoad;
 import com.letty.demo.dough.loadImgs.EachRequest;
-
+import com.letty.demo.dough.placeholder.PlaceHolderPolicy;
 
 public class Dough {
     /**
@@ -26,16 +27,16 @@ public class Dough {
      */
 
     private static volatile Dough instance;
+    private AsynLoad asynLoad = AsynLoad.getInstance();
 
     private Dough(DoughConfig config) {
         this.config = config;
-
     }
 
     /**
-     * 双重检查方式，利用配置对象进行配置，因此配置对象限制非空为空
+     * 初始化实例，双重检查方式，利用配置对象进行配置，因此配置对象限制非空为空
      */
-    public static Dough init(@NonNull DoughConfig config) {
+    public static void init(@NonNull DoughConfig config) {
         if (instance == null) {
             synchronized (Dough.class) {
                 if (instance == null) {
@@ -43,7 +44,6 @@ public class Dough {
                 }
             }
         }
-        return instance;   //可用于链式API
     }
 
     /**
@@ -55,14 +55,49 @@ public class Dough {
         }
         return instance;
     }
+    /**
+     * 以下是加载图片，不同参数，重载实现
+     */
 
     /**
-     * 加载图片API， 需要URI绝对路径
+     * 使用默认占位符
      */
     public void loadImgToView(ImageView view, String uri) {
-        EachRequest request = new EachRequest(view, uri, config.getPlaceHolderPolicy());
-        AsynTaskLoad asynTaskLoad = new AsynTaskLoad();
-        asynTaskLoad.execute(request);
+        PlaceHolderPolicy placeHolderPolicy = new PlaceHolderPolicy();
+        asynLoad(view, uri, placeHolderPolicy);
+    }
+
+    /**
+     * 加载图片时，使用用户自定义的loadingImg,
+     * 单独设置一个占位图的时候，另外一个传空
+     *
+     * @param imageView
+     * @param uri
+     * @param loadingImg
+     * @param errorImg
+     */
+    public void loadImgToView(@NonNull ImageView imageView, @NonNull String uri, @DrawableRes Integer loadingImg, @DrawableRes Integer errorImg) {
+        PlaceHolderPolicy placeHolderPolicy = new PlaceHolderPolicy(loadingImg, errorImg);
+        asynLoad(imageView, uri, placeHolderPolicy);
+    }
+
+    private void asynLoad(ImageView imageView, String uri, PlaceHolderPolicy placeHolderPolicy) {
+        //封装请求
+        int serialNum = asynLoad.updateSerilNum(imageView.getId());
+        EachRequest request = new EachRequest(uri, placeHolderPolicy, serialNum);
+        asynLoad.setEachRequest(request);
+        //获取imageView的宽高用于采样比的计算，避免大图内存溢出
+        //显示加载占位图
+        asynLoad.showLoadingImgs(imageView);
+        imageView.post(new Runnable() {
+            @Override
+            public void run() {
+                asynLoad.setImgViewWidth(imageView.getWidth());
+                asynLoad.setImgViewHeight(imageView.getHeight());
+
+            }
+        });
+        asynLoad.loadAndShow(imageView);
     }
 
     public DoughConfig getConfig() {
