@@ -29,7 +29,7 @@ import retrofit2.Response;
 import retrofit2.Retrofit;
 
 /*
-  网络图片加载器
+  网络图片加载器，暂时使用的原生API，retrofit还有问题
  *
  * */
 public class UrlSourceLoader extends AbstractLoader {

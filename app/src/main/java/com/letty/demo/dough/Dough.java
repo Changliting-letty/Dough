@@ -86,9 +86,9 @@ public class Dough {
         int serialNum = asynLoad.updateSerilNum(imageView.getId());
         EachRequest request = new EachRequest(uri, placeHolderPolicy, serialNum);
         asynLoad.setEachRequest(request);
-        //获取imageView的宽高用于采样比的计算，避免大图内存溢出
         //显示加载占位图
         asynLoad.showLoadingImgs(imageView);
+        //获取imageView的宽高用于采样比的计算，避免大图内存溢出
         imageView.post(new Runnable() {
             @Override
             public void run() {

@@ -11,13 +11,13 @@ package com.letty.demo.dough.loadImgs;
 import android.graphics.Bitmap;
 import android.net.Uri;
 
-import android.os.Build;
+
 import android.widget.ImageView;
 
 import androidx.annotation.IdRes;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.annotation.RequiresApi;
+
 
 import com.letty.demo.dough.log.LogUtil;
 import com.letty.demo.dough.placeholder.PlaceHolderPolicy;
@@ -31,11 +31,9 @@ public class AsynLoad {
     private static volatile AsynLoad instance;
     private static final String mTag = "AsynLoad";
     private EachRequest eachRequest;
-
-    public AsynLoad(EachRequest eachRequest) {
-        this.eachRequest = eachRequest;
-    }
-
+    /**
+     * 记录imageView最大加载序号
+     */
     public ConcurrentHashMap<Integer, Integer> loadSerils;
 
     private AsynLoad() {
@@ -54,14 +52,13 @@ public class AsynLoad {
     }
 
     /**
-     * 异步
+     * 异步加载，主线程显示
      */
     public void loadAndShow(@NonNull ImageView imageView) {
         String strUri = eachRequest.getUrl();
         Uri uri = Uri.parse(strUri);
         String schema = uri.getScheme();
         AbstractLoader loader = MyLoaderManager.getInstance().getLoader(schema);
-        showLoadingImgs(imageView);
         if (loader == null) {
             LogUtil.d(mTag, "Do not find the relate loader.Please Check again");
             //这里应该显示错误占位图，
@@ -83,7 +80,7 @@ public class AsynLoad {
                             LogUtil.d(mTag, "Fail to load this img.");
                         } else {
                             if (request.getSerialNum() == numberToshow) {
-                                //显示最后一张下载的图
+                                //显示最后加载的图
                                 imageView.setImageBitmap(bitmap);
                             }
 
@@ -140,6 +137,11 @@ public class AsynLoad {
         imageView.setImageResource(placeHolderPolicy.getErrorImg());
     }
 
+    /**
+     * 更新View的最大加载次序号
+     * @param imageViewRid
+     * @return
+     */
     public int updateSerilNum(@IdRes Integer imageViewRid) {
         if (loadSerils.containsKey(imageViewRid)) {
             Integer v = loadSerils.get(imageViewRid) + 1;

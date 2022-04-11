@@ -12,7 +12,6 @@ package com.letty.demo.dough.loadImgs;
 
 import androidx.annotation.Nullable;
 
-import java.util.HashMap;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class MyLoaderManager {

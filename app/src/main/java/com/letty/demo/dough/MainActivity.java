@@ -24,8 +24,8 @@ public class MainActivity extends AppCompatActivity {
 
     public void loadImage(View view) {
         //显示最后加载的
+        Dough.getIncetance().loadImgToView(imageView, "https://pic2.zhimg.com/v2-b44546a9e25061ec41ce65ce6ca207c5_b.jpg");
         Dough.getIncetance().loadImgToView(imageView, "https://pic1.zhimg.com/80/v2-af36089754f599cf5cd2c5fe9284644c_720w.jpg");
-        Dough.getIncetance().loadImgToView(imageView, "https://pic2.zhimg.com/80/v2-b29bb0edcf32debdee7d9255bc15c419_1440w.jpg");
     }
 
     @Override

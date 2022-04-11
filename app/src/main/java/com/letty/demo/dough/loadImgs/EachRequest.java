@@ -7,15 +7,9 @@
 package com.letty.demo.dough.loadImgs;
 
 import android.graphics.Bitmap;
-import android.widget.ImageView;
-
-import androidx.annotation.Nullable;
-
-import com.letty.demo.dough.Dough;
 import com.letty.demo.dough.placeholder.PlaceHolderPolicy;
 
-import java.lang.ref.SoftReference;
-import java.lang.ref.WeakReference;
+
 
 public class EachRequest {
     /**
@@ -25,23 +19,21 @@ public class EachRequest {
 
 
     /**
-     * 显示配置
+     * 占位图设置
      */
 
     private PlaceHolderPolicy placeHolderPolicy;
+    /**
+     * 最后加载的图片
+     */
     private Bitmap bitmap;
     /**
-     * 图片顺序号，用于图片加载、下载、显示顺序比较
+     * 图片顺序号，确保显示的是最后加载的
      */
     private int serialNum;
 
-//    /**
-//     * imgview的弱引用,不用了，展示的时候再用吧，被GC就..
-//     */
-//    private WeakReference<ImageView> imageViewWeakReference;
-
     /**
-     * imageView的宽高
+     * imageView的宽高，用于获取采样比
      */
     private int imgViewWidth;
     private int imgViewHeight;

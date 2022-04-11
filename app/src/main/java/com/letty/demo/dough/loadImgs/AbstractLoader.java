@@ -7,9 +7,6 @@
  * 加载管理器
  * 缓存操作
  * 加载图片
- * 占位图设置
- * 加载后的显示回调
- * 这里体现依赖倒置原则
  */
 
 package com.letty.demo.dough.loadImgs;
